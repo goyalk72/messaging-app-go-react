@@ -7,7 +7,7 @@ import (
 	"github.com/goyalk72/messaging-app-go-react/pkg/websocket"
 )
 
-func serveWs(pool *websocket.Pool, w http.ResponseWriter, r *http.Request) {
+func serveWs(pools *websocket.AllPools, w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("WebSocket EndPoint Hit")
 	ws, err := websocket.Upgrade(w, r)
@@ -17,18 +17,17 @@ func serveWs(pool *websocket.Pool, w http.ResponseWriter, r *http.Request) {
 
 	client := &websocket.Client{
 		Conn: ws,
-		Pool: pool,
 	}
-	pool.Register <- client
-	client.Read()
+	// pool.Register <- client
+	client.Read(pools)
 }
 
 func setupRoutes() {
-	pool := websocket.NewPool()
-	go pool.Start()
+	pools := websocket.NewAllPools()
+	go pools.Start()
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		serveWs(pool, w, r)
+		serveWs(pools, w, r)
 	})
 }
 

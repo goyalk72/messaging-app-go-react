@@ -1,8 +1,12 @@
 package websocket
 
-import "fmt"
+import (
+	"fmt"
+	"math/rand"
+)
 
 type Pool struct {
+	ID         int
 	Register   chan *Client
 	Unregister chan *Client
 	Clients    map[*Client]bool
@@ -11,6 +15,7 @@ type Pool struct {
 
 func NewPool() *Pool {
 	return &Pool{
+		ID:         rand.Intn(100000000),
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
 		Clients:    make(map[*Client]bool),
