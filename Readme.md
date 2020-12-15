@@ -8,6 +8,7 @@ cd messaging-app-go-react
 cd back-end
 go run main.go
 ```
-
+### View the app
+View the app at localhost:8080
 
 
