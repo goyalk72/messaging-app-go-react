@@ -1,4 +1,5 @@
-var socket = new WebSocket("ws://localhost:8080/ws")
+var HOST = "ws://" + window.location.hostname
+var socket = new WebSocket(HOST+":8080/ws")
 
 let connect = cb => {
     console.log("Attempting Connection....");

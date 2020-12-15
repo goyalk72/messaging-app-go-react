@@ -23,22 +23,41 @@ func NewPool() *Pool {
 	}
 }
 
+func (pool *Pool) CheckUsername(name string) bool {
+	for client := range pool.Clients {
+		if client.ID == name {
+			return false
+		}
+	}
+	return true
+}
+
 func (pool *Pool) Start() {
 	for {
 		select {
 		case client := <-pool.Register:
+			newClient := client
 			pool.Clients[client] = true
 			fmt.Println("Size of Connection Pool: ", len(pool.Clients))
+			var allClients []string
+			for client := range pool.Clients {
+				allClients = append(allClients, client.ID)
+			}
 			for client, _ := range pool.Clients {
-				fmt.Println(client)
-				client.Conn.WriteJSON(Message{Type: 1, Body: "New User Joined ..."})
+				client.Conn.WriteJSON(NewMessage(JOIN, pool.ID, newClient.ID, newClient.ID+" has joined....", allClients))
 			}
 			break
 		case client := <-pool.Unregister:
+			newClient := client
+			newClient.Conn.WriteJSON(Message{Type: EXIT, Username: newClient.ID, RoomID: pool.ID, Body: "Want to disconnect"})
 			delete(pool.Clients, client)
 			fmt.Println("Size of Connection Pool: ", len(pool.Clients))
+			var allClients []string
+			for client := range pool.Clients {
+				allClients = append(allClients, client.ID)
+			}
 			for client, _ := range pool.Clients {
-				client.Conn.WriteJSON(Message{Type: 1, Body: "User Disconnected..."})
+				client.Conn.WriteJSON(NewMessage(DISCONNECT, pool.ID, newClient.ID, newClient.ID+" has disconnected....", allClients))
 			}
 			break
 		case message := <-pool.Broadcast:

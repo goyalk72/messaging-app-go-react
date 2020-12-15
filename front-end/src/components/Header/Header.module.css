@@ -10,3 +10,15 @@
     margin: 0;
     padding: 0;
 }
+
+.header button {
+    color: white;
+    padding: 10px;
+    margin: 20px;
+    font-size: 20px;
+    border: none;
+    border-radius: 5px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    width: 30%;
+    background-color: red;
+}

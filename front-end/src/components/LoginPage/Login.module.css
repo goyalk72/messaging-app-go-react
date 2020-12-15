@@ -1,0 +1,49 @@
+.JoinPage{
+    margin: 100px auto;
+  }
+  
+  .JoinPageFlex {
+    display: flex;
+    flex-direction: row;
+    margin: 20px auto;
+    justify-content: center;
+    width: 60%;
+  }
+  .JoinPageFlex > div {
+    /* color: white; */
+    margin: 10px;
+    text-align: center;
+    font-size: 30px;
+    padding: 10px 20px;
+    align-items: center;
+    width: 50%;
+    /* background-color: green; */
+  }
+  
+  .JoinPageFlex input {
+    padding: 10px;
+    margin: 0;
+    font-size: 20px;
+    border: none;
+    border-radius: 5px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    width: 98%;
+  }
+  
+  .JoinPageFlex button{
+    color: white;
+    padding: 10px;
+    margin: 20px;
+    font-size: 20px;
+    border: none;
+    border-radius: 5px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    width: 98%;
+    background-color: #15223b;
+  }
+  
+  .Error {
+    color: red;
+    font-size: 15px;
+    padding: 10px;
+  }

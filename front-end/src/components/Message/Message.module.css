@@ -1,4 +1,6 @@
-.Message {
+.MessageOther {
+    /* float: left; */
+    text-align: left;
     display: block;
     background-color: white;
     margin: 10px auto;
@@ -6,6 +8,41 @@
     padding: 10px 20px;
     border-radius: 5px;
     clear: both;
+    overflow-wrap: break-word;
+}
+
+.MessageMe {
+    text-align: right;
+    color: white;
+    background-color: #328ec4;
+    display: block;
+    margin: 10px auto;
+    box-shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.2);
+    padding: 10px 20px;
+    border-radius: 5px;
+    clear: both;
+    overflow-wrap: break-word;
+}
+
+.MessageJoin{
+
+    display: block;
+    color: green;
+    margin: 10px auto;
+    padding: 10px 10px;
+    border-radius: 5px;
+    clear: both;
+    overflow-wrap: break-word;
+}
+
+.MessageDisjoin{
+    display: block;
+    margin: 10px auto;
+    padding: 10px 10px;
+    color: red;
+    border-radius: 5px;
+    clear: both;
+    overflow-wrap: break-word;
 }
 /* .Message &.me {
       color: white;

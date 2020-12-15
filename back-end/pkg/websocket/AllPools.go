@@ -2,7 +2,6 @@ package websocket
 
 import (
 	"fmt"
-	"strconv"
 )
 
 type AllPools struct {
@@ -11,7 +10,7 @@ type AllPools struct {
 	Unregister chan *Pool
 }
 
-func NewAllPool() *AllPools {
+func NewAllPools() *AllPools {
 	return &AllPools{
 		Register:   make(chan *Pool),
 		Unregister: make(chan *Pool),
@@ -26,13 +25,17 @@ func (p *AllPools) Start() {
 			p.Pools[pool] = true
 			fmt.Println("Number of Pools: ", len(p.Pools))
 			break
+		case pool := <-p.Unregister:
+			delete(p.Pools, pool)
+			fmt.Println("Number of pools : ", len(p.Pools))
+			break
 		}
 	}
 }
 
-func (p *AllPools) Check(room string) *Pool {
+func (p *AllPools) Check(room int) *Pool {
 	for pool, _ := range p.Pools {
-		if r := strconv.Itoa(pool.ID); r == room {
+		if pool.ID == room {
 			return pool
 		}
 	}

@@ -9,28 +9,31 @@ import (
 )
 
 type Client struct {
-	ID   string
-	Conn *websocket.Conn
-	Pool *Pool
+	ID       string
+	Conn     *websocket.Conn
+	Pool     *Pool
+	Allpools *AllPools
 }
 
-type Message struct {
-	Type int    `json:"type"`
-	Body string `json:"body"`
-}
+// type Message struct {
+// 	Type     int    `json:"type"`
+// 	Body     string `json:"body"`
+// 	UserName string `json:"username"`
+// }
 
-type RoomRequest struct {
-	Type     int    `json:"Type"`
-	UserName string `json:"UserName"`
-	RoomID   string `json:"RoomID"`
-}
+// type RoomRequest struct {
+// 	Type     int    `json:"type"`
+// 	UserName string `json:"userName"`
+// 	RoomID   string `json:"roomID"`
+// }
 
-type ChatMessage struct {
-	Type    int    `json:"Type"`
-	Message string `json:"Message"`
-}
+// type ChatMessage struct {
+// 	Type     int    `json:"Type"`
+// 	UserName string `json:"UserName"`
+// 	Message  string `json:"Message"`
+// }
 
-func (c *Client) Read(pools *AllPools) {
+func (c *Client) CreateOrJoinRoom() {
 
 	for {
 		_, p, err := c.Conn.ReadMessage()
@@ -38,47 +41,76 @@ func (c *Client) Read(pools *AllPools) {
 			log.Println(err)
 			return
 		}
-		var r RoomRequest
-		if err := json.Unmarshal(p, &r); err != nil {
-			fmt.Printf(" Error getting room : %+v\n", err)
+		var rec RecMessage
+		if err := json.Unmarshal(p, &rec); err != nil {
+			log.Printf(" Error getting room : %+v\n", err)
+			return
 		}
-		if r.Type == 2 {
+
+		if rec.Type == CREATE {
 			pool := NewPool()
-			pools.Register <- pool
+			c.Allpools.Register <- pool
 			go pool.Start()
 			c.Pool = pool
+			c.ID = rec.Username
 			pool.Register <- c
 			break
-		} else if r.Type == 1 {
-			if pool := pools.Check(r.RoomID); pool != nil {
-				c.Pool = pool
-				pool.Register <- c
-				break
+		} else if rec.Type == JOIN {
+			pool := c.Allpools.Check(rec.RoomID)
+			if pool != nil {
+				if pool.CheckUsername(rec.Username) {
+					c.Pool = pool
+					c.ID = rec.Username
+					pool.Register <- c
+					break
+				} else {
+					message := Message{Type: ERROR, Body: "Username already exists"}
+					c.Conn.WriteJSON(message)
+				}
+
+			} else {
+				message := Message{Type: ERROR, Body: "Enter correct Room ID"}
+				c.Conn.WriteJSON(message)
 			}
 		}
-
-		c.Readmsgs()
-
 	}
+	fmt.Println("Now reading msgs")
+	c.Read()
+
 }
 
-func (c *Client) Readmsgs() {
+func (c *Client) Read() {
+
 	defer func() {
+		deletepool := false
+		pool := c.Pool
+		if len(c.Pool.Clients) == 1 {
+			deletepool = true
+		}
 		c.Pool.Unregister <- c
-		c.Conn.Close()
+		if deletepool {
+			c.Allpools.Unregister <- pool
+		}
+		c.CreateOrJoinRoom()
 	}()
 
 	for {
-		messageType, p, err := c.Conn.ReadMessage()
+
+		_, p, err := c.Conn.ReadMessage()
 		if err != nil {
 			log.Println(err)
 			return
 		}
-		var r ChatMessage
-		if err := json.Unmarshal(p, &r); err != nil {
+
+		var rec RecMessage
+		if err := json.Unmarshal(p, &rec); err != nil {
 			fmt.Printf(" Error getting chat : %+v\n", err)
 		}
-		message := Message{Type: messageType, Body: r.Message}
+		if rec.Type == EXIT {
+			log.Println("The user wants to leave the chat room")
+			return
+		}
+		message := Message{Type: CHAT, RoomID: c.Pool.ID, Username: c.ID, Body: rec.Body}
 		c.Pool.Broadcast <- message
 		fmt.Printf("Message Received: %+v\n", message)
 	}
